@@ -133,6 +133,8 @@ Everything machine-specific lives in `.env` (git-ignored; never commit it). `.en
 | `H3_SERVICE_USER` | | SSH user | User the service runs as |
 | `H3_SERVICE` | | `h3-server` | systemd unit name |
 | `H3_HOST` / `H3_PORT` | | `0.0.0.0` / `8190` | Address the server listens on |
+| `H3_API_TOKEN` | | | Optional API token: `/api/*` except `/api/health` then needs `Authorization: Bearer <token>`; the web UI asks once per browser. `/files/*` stays open |
+| `H3_CORS_ORIGINS` | | | Comma-separated browser origins allowed to call the API from another host (e.g. an infinite-canvas page); `*` allows any |
 | `H3_COMFY_ARGS` | | `--enable-triton-backend --use-sage-attention` | Extra ComfyUI CLI flags; set it empty if triton / sageattention are not installed |
 | `HF_ENDPOINT` | | `https://huggingface.co` | Hugging Face mirror for model downloads |
 | `HF_TOKEN` | | | Token for gated or private repos |
@@ -411,6 +413,8 @@ Running without the deploy script: build the UI (`cd web && npm install && npm r
 ## HTTP API
 
 See **[the complete API guide](doc/api.md)** for every model's parameters and curl examples, voice generation/cloning/design, ASR timestamp exports, task polling, downloads and GPU memory management.
+
+With `H3_API_TOKEN` set, send `Authorization: Bearer <token>` on every call except `/api/health`; browser tools on another host also need their origin in `H3_CORS_ORIGINS`.
 
 | Method | Path | |
 |---|---|---|

@@ -7,15 +7,17 @@ This guide describes the current server implementation. All models use Studio's 
 ```bash
 # Replace this with your Studio URL.
 export STUDIO_URL='http://localhost:8190'
+export STUDIO_TOKEN=''   # only when the server sets H3_API_TOKEN
 curl --fail-with-body "$STUDIO_URL/api/health"
-curl --fail-with-body "$STUDIO_URL/api/presets"
+curl --fail-with-body -H "Authorization: Bearer $STUDIO_TOKEN" "$STUDIO_URL/api/presets"
 ```
 
 - Create jobs with `POST /api/jobs` and a form body. File uploads require `multipart/form-data`; the examples use `curl -F`.
 - A successful submission returns HTTP **201** and a job object. This means the job was recorded/queued, not that inference finished. All models share one queue, and only one job runs at a time.
 - Poll `GET /api/jobs/{id}` until the status is `done`, `failed` or `canceled`. Cold model loads can take time; avoid submitting duplicate jobs.
 - Returned file URLs usually begin with `/files/` and are relative to the service root. Prefix them with `STUDIO_URL` when downloading.
-- The service currently has no built-in authentication or API key validation. Configure access control at the deployment entry point if needed. Model repository tokens are not Studio authentication parameters.
+- Authentication is optional. When the server sets `H3_API_TOKEN`, every `/api/*` request except `/api/health` must send `Authorization: Bearer <token>` (otherwise HTTP 401). `/files/*` stays open so `<video>` and `<img>` elements work; file names are random ids that only the API reveals. Model repository tokens are not Studio authentication parameters.
+- Browser clients on another origin (for example an infinite-canvas page) need their origin in `H3_CORS_ORIGINS`. Listed origins get CORS headers on `/api/*` and `/files/*`, preflight for `Authorization`, and `X-Total-Count` exposed.
 - The maximum request body is **256 MiB**, including files and multipart overhead. Leave room for that overhead when sizing uploads.
 - File fields accept uploaded bytes, not server-local paths or URLs. To reuse a generated result, download it and upload it to the next job.
 - Use `--form-string` for text to prevent curl from interpreting prompts starting with `@` or `<` as file inputs.

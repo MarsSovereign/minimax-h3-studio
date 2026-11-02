@@ -98,6 +98,9 @@ deploy_server() {
   rsync -az --delete --exclude __pycache__ --exclude .DS_Store server/ "$HOST:$REMOTE/server/"
   rsync -az comfy_launcher/run_h3.py "$HOST:$REMOTE/comfy_launcher/"
   rsync -az --delete --exclude .DS_Store scripts/ "$HOST:$REMOTE/scripts/"
+  # Secrets stay out of the world-readable unit; systemd reads this file as root before dropping privileges.
+  printf 'H3_API_TOKEN=%s\nH3_CORS_ORIGINS=%s\n' "${H3_API_TOKEN:-}" "${H3_CORS_ORIGINS:-}" \
+    | remote "umask 077 && cat > '$REMOTE/server.env'"
   echo "==> installing systemd unit $SERVICE and restarting"
   render_unit | remote "sudo tee /etc/systemd/system/$SERVICE.service > /dev/null \
     && sudo systemctl daemon-reload && sudo systemctl enable --quiet $SERVICE && sudo systemctl restart $SERVICE"

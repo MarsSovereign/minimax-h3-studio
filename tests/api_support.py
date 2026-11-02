@@ -17,12 +17,15 @@ from server_settings import ServerSettings
 
 
 class APIAppTestCase(unittest.IsolatedAsyncioTestCase):
+    settings_overrides = {}
+
     async def asyncSetUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.settings = ServerSettings(
             comfyui=None,
             data=Path(self.temp.name),
             web_dist=Path(self.temp.name) / "web",
+            **self.settings_overrides,
         )
         app = server.make_app(
             self.settings, engine=SimpleNamespace(), start_worker=False

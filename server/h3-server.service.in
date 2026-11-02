@@ -26,6 +26,8 @@ Environment="H3_STRATA_PORT=@STRATA_PORT@"
 Environment="H3_STRATA_PARALLEL=@STRATA_PARALLEL@"
 Environment="H3_STRATA_CONCURRENCY=@STRATA_CONCURRENCY@"
 Environment="H3_STRATA_TIMEOUT=@STRATA_TIMEOUT@"
+# H3_API_TOKEN / H3_CORS_ORIGINS: deploy.sh writes them to this 0600 file, not to the world-readable unit.
+EnvironmentFile=-@DIR@/server.env
 # Runs inside the ComfyUI Python env (triton compiles kernels at run time and needs its env vars).
 ExecStart=/bin/bash -c '@ACTIVATE@exec @PYTHON@ @DIR@/server/app.py'
 Restart=on-failure

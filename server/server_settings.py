@@ -39,6 +39,8 @@ class ServerSettings:
     strata_concurrency: int = 16
     strata_timeout: int = 1800
     comfy_args: tuple = ("--enable-triton-backend", "--use-sage-attention")
+    api_token: str = ""
+    cors_origins: tuple = ()
 
     @classmethod
     def from_env(cls):
@@ -61,6 +63,11 @@ class ServerSettings:
             strata_parallel=int(os.environ.get("H3_STRATA_PARALLEL", "8")),
             strata_concurrency=int(os.environ.get("H3_STRATA_CONCURRENCY", "16")),
             strata_timeout=int(os.environ.get("H3_STRATA_TIMEOUT", "1800")),
+            api_token=os.environ.get("H3_API_TOKEN", "").strip(),
+            cors_origins=tuple(
+                origin.rstrip("/")
+                for origin in os.environ.get("H3_CORS_ORIGINS", "").replace(",", " ").split()
+            ),
             comfy_args=tuple(
                 shlex.split(
                     os.environ.get(

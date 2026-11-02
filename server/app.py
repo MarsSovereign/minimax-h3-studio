@@ -8,6 +8,7 @@ from model_catalog import LEGACY_PRESETS
 from server_settings import ServerSettings
 from job_worker import Worker
 from http_api import system, jobs, submissions, frontend
+from http_api.access import access_middleware
 
 
 def make_app(settings=None, engine=None, *, start_worker=True):
@@ -22,7 +23,9 @@ def make_app(settings=None, engine=None, *, start_worker=True):
         else H3Engine(settings.comfyui, settings.comfy_args, audio_settings=settings)
     )
     worker = Worker(store, engine, settings)
-    app = web.Application(client_max_size=256 * 1024**2)
+    app = web.Application(
+        client_max_size=256 * 1024**2, middlewares=[access_middleware(settings)]
+    )
     app["settings"], app["store"], app["worker"] = settings, store, worker
     app.router.add_get("/api/health", system.health)
     app.router.add_get("/api/presets", system.presets)
